@@ -1,0 +1,49 @@
+
+h2{
+  color: #2180CE;
+  font-family: 'Raleway', sans-serif;
+}
+
+h3{
+    color: #2180CE;
+  font-family: 'Raleway', sans-serif;
+}
+
+h4 {
+  color: #D17529;
+  font-family: 'Raleway', sans-serif;
+  font-weight: bold;
+}
+
+body {
+  background-color: white;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12;
+}
+
+
+.topicsList .topic {
+    font-family: 'Raleway', sans-serif;
+    line-height: 40px;
+    font-size: 15px;
+    padding-left: 10px;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-size: 2px 80px;
+    background-position: left 100%;
+        background-position-y: 100%;
+    background-image: url(images/topicProgress.png);
+    border-bottom: 1px solid #7EADD3;
+    -webkit-transition-property: background-position;
+    transition-property: background-position;
+    -webkit-transition-duration: 0.25s;
+    transition-duration: 0.25s;
+}
+
+
+.topicsList .topic.current {
+    font-family: 'Roboto Slab', serif;
+    background-color: #DBA376;
+    color: #ffffff;
+    border: 0px;
+}
