@@ -13,6 +13,14 @@ library(learnr)
 knitr::opts_chunk$set(echo = TRUE,
                       comment = "",
                       warning = FALSE)
+
+
+library(sf)
+library(tidyverse)
+comms <- st_read("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Chicago_Community_Areas.geojson") 
+libraries <- st_read("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Chicago_Libraries.geojson")
+bus_routes <- st_read("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/CTA_Bus_Routes.geojson")
+wards <-  st_read("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Chicago_Wards.geojson")
 ```
 
 
@@ -68,11 +76,12 @@ These resources were very helpful to me in the learning about all of these as we
 ## Reading in data 
 
 
+
 First we read in each of the data sets we will be using the `sf::st_read`. 
 
 ### Chicago Community Areas
 
-```{r input1, message = FALSE}
+```{r input1}
 library(sf)
 comms <- st_read("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Chicago_Community_Areas.geojson") 
 ```
@@ -175,10 +184,6 @@ These wards are 50 political jurisdictions that elect one member each to the Chi
 wards <-  st_read("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Chicago_Wards.geojson")
 ```
 
-
-
-
-
   
 ## A closer look at sf objects  
 
@@ -266,7 +271,6 @@ Read the data in using `readr::read_csv`.
 ```{r readinspections}
 library(readr)
 inspections_data <- read_csv("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Food_Inspections.csv")
-
 ```
 
 
@@ -276,7 +280,6 @@ We can convert from a typical data frame (or tibble) using the `st_as_sf` functi
 ```{r stsfinspections}
 inspections <- st_as_sf(inspections_data, coords = c("Longitude", "Latitude"), 
                  crs = 4326)
-
 ```
 
 Notice that the *Latitude* and *Longitude* columns are no longer included in the data frame. 
@@ -363,22 +366,29 @@ We will transform the data in the <i>bus_routes</i> data frame from NAD83 to WGS
 
   * `sf::st_crs` will be used to get the CRS of *comms* to be used as the necessary 2nd input to `sf::st_transform`
 
-```{r transformroutes}
+```{r}
 routes_wgs <- st_transform(bus_routes, st_crs(comms))
-print(routes_wgs)
 ```
 
+```{r tranroutes, echo = TRUE, message = TRUE, warning = TRUE}
+routes_wgs <- st_transform(bus_routes, st_crs(comms))
+```
+
+
+```{r printrouteswgs}
+print(routes_wgs)
+```
 
 #### Exercise: Extract the geometry of a specific bus route
 
 Write code to see the geometry of the 3rd row of *routes_wgs*. Does this represent the same CTA route as we saw before?
 
-```{r showgeomwgsroutes, exercise = TRUE}
+```{r showgeomwgsroutes, exercise = TRUE, exercise.setup = "transformroutes"}
 
 ```
 
 ```{r showgeomwgsroutes-solution}
-routes_wgs$geometry[[1]]
+routes_wgs$geometry[[3]]
 ```
 
 
@@ -405,18 +415,17 @@ ggplot(data = comms) +
 
 #### Exercise: Plot CTA Bus Routes using ggplot2 
 
-Using code similar to above, make a plot showing all of the CTA's bus routes 
+Using code similar to above, make a plot showing all of the CTA's bus routes (in *routes_wgs*) 
 
 ```{r plotroutes, exercise = TRUE}
-library(ggplot2)
+
 ```
 
 ```{r plotroutes-solution}
 library(ggplot2)
 
-ggplot(data = bus_routes) +
+ggplot(data = routes_wgs) +
   geom_sf()
-
 ```
 
 
@@ -457,7 +466,14 @@ print(comm_group)
 
 Alternatively, the subsetting could have been done using base R syntax:
 
-```{r subbase, eval = FALSE}
+```{r}
+community_group <- c("ROGERS PARK", "WEST RIDGE", "UPTOWN", "LINCOLN SQUARE", "EDGEWATER")
+comm_group <- comms[comms$community %in% community_group, ]
+```
+
+
+```{r subbase, message = FALSE, warning = FALSE, echo = TRUE}
+community_group <- c("ROGERS PARK", "WEST RIDGE", "UPTOWN", "LINCOLN SQUARE", "EDGEWATER")
 comm_group <- comms[comms$community %in% community_group, ]
 ```
 
@@ -466,7 +482,7 @@ comm_group <- comms[comms$community %in% community_group, ]
 
 Make a plot of only the community areas in the *comm_group* object.
 
-```{r plotcommgroup, exercise = TRUE}
+```{r plotcommgroup, exercise = TRUE, exercise.setup = "subbase"}
 
 ```
 
@@ -482,7 +498,7 @@ ggplot(data = comm_group) +
 
 Subset *routes_wgs* to get a single bus route, 111A, and plot it.
 
-```{r plot111A, exercise = TRUE}
+```{r plot111A, exercise = TRUE, exercise.setup = "tranroutes"}
 
 ```
 
@@ -790,11 +806,11 @@ ggplot(data = no_libraries) +
 ```
 
 
-#### Exercise:  Which communities does route 2 pass through?**
+#### Exercise:  Which communities does route 2 pass through?
   
-**Make a map of all the communities and route *2***
+**Make a map showing CTA Route 2 and all the communities it passes through**
   
-```{r show54b, exercise = TRUE}
+```{r show54b, exercise = TRUE, exercise.setup = "transformroutes"}
 
 ```
 
@@ -904,7 +920,7 @@ ggplot(comms_boundaries) + geom_sf()
 Let us consider Ward 38, a political district, and Community 15 (Portage Park), an identified community area. 
 
 
-```{r w38c15}
+```{r}
 ward38 <- filter(wards, ward == "38")
 comm15 <- filter(comms, NID == "15")
 ```
@@ -914,8 +930,8 @@ Now, plot the two regions:
 
 ```{r plotw38c15}
 ggplot() +
-  geom_sf(data = ward38, fill = "red", alpha = 0.5) +
   geom_sf(data = comm15, fill = "blue", alpha = 0.5) + 
+  geom_sf(data = ward38, fill = "red", alpha = 0.5) + 
   theme_minimal()
 ```
 
@@ -929,7 +945,7 @@ We can see that they overlap. The maps below, illustrate the regions defined by 
 
 Reproduce the plot in A of the map above: showing the union of Ward 38 and Community 15
 
-```{r unionplot, exercise = TRUE}
+```{r unionplot, exercise = TRUE, exercise.setup = "w38c15"}
 
 ```
 
@@ -945,7 +961,7 @@ ggplot(data = union_w38_c15) +
 
 Reproduce the plot in B of the map above:
 
-```{r plotdiffint, exercise = TRUE}
+```{r plotdiffint, exercise = TRUE, exercise.setup = "w38c15"}
 
 ```
 
@@ -968,7 +984,7 @@ ggplot()+
 
 Reproduce the plot in C of the map above:
 
-```{r plotsymdiffint, exercise = TRUE}
+```{r plotsymdiffint, exercise = TRUE, exercise.setup = "w38c15"}
 
 ```
 
