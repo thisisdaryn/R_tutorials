@@ -268,7 +268,7 @@ An example of this is the *Food_Inspections.csv* file which contains attribute a
 
 Read the data in using `readr::read_csv`. 
 
-```{r readinspections}
+```{r readinspections, message = FALSE}
 library(readr)
 inspections_data <- read_csv("https://raw.githubusercontent.com/thisisdaryn/R_tutorials/master/data/Food_Inspections.csv")
 ```
